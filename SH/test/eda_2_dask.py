@@ -3,16 +3,20 @@ from pyarrow import feather
 from itertools import chain
 import dask.dataframe as dd
 from catboost import CatBoostClassifier
+import timeit
+
 
 #%%
 import dask
-data = feather.read_feather('./data/train_data.ftr')
-ds_data = dask.dataframe.from_pandas(data, npartitions=5)
+import dask.dataframe as dd
 
+data = feather.read_feather('./SH/data/train_data.ftr')
+ds_data = dask.dataframe.from_pandas(data, npartitions=5)
+ds_data2 = dask.dataframe.read_csv('./SH/data/train_data.csv')
 
 #%%
 
-data = feather.read_feather('./data/train_data.ftr')
+data = feather.read_feather('./SH/data/train_data.ftr')
 
 
 cols_S = [col for col in data.columns if ('S_' in col) and (col != 'S_2')] # 소비
@@ -24,14 +28,75 @@ cols_R = [col for col in data.columns if 'R_' in col] # 리스크
 cols_set = [cols_S, cols_D, cols_P, cols_B, cols_R]
 
 
-#%%  Groupby test
+#%% test 1
+start = timeit.default_timer()
+ds_test = ds_data[['customer_ID']+cols_D].groupby('customer_ID').mean().compute()
+print('Dask Elapse: ', timeit.default_timer() - start)
 
 
-target_df = data.groupby('customer_ID').first()['target']
+start = timeit.default_timer()
+ds_test2 = ds_data2[['customer_ID']+cols_D].groupby('customer_ID').mean().compute()
+print('Dask Elapse: ', timeit.default_timer() - start)
+
+
+start = timeit.default_timer()
+pd_test = data.loc[:, ['customer_ID']+cols_D].groupby('customer_ID').mean()
+print('Pandas Elapse: ', timeit.default_timer() - start)
+
+
+
+#%%  test2
+
+start = timeit.default_timer()
+test2_data = ds_data[['customer_ID']+cols_D]
+groupby_col_name = 'customer_ID'
+
+feats = ['avg', 'min', 'max']
+
+for feat in feats:
+    if feat == 'avg':
+        feat_df1 = test2_data.groupby(groupby_col_name).mean().add_suffix('_' + feat)
+    elif feat == 'min':
+        feat_df2 = test2_data.groupby(groupby_col_name).min().add_suffix('_' + feat)
+    elif feat == 'max':
+        feat_df3 = test2_data.groupby(groupby_col_name).max().add_suffix('_' + feat)
+    else:
+        pass
+
+result = dd.concat([feat_df1, feat_df2, feat_df3], axis=1)
+result_temp = result.compute()
+print('Dask Elapse: ', timeit.default_timer() - start)
 
 
 
 
+def make_basic_summ_features(df: pd.DataFrame, groupby_col_name:str) -> pd.DataFrame:
+    """
+    :param df: groupby 컬럼을 포함한 dataframe
+    :param groupby_col_name: groupby 적용할 컬럼명 (ex:id)
+    :return:
+    """
+    feats = ['avg', 'min', 'max']
+    result = pd.DataFrame()
+    for feat in feats:
+        if feat == 'avg':
+            feat_df = df.groupby(groupby_col_name).mean().add_suffix('_'+feat)
+            result = pd.concat([result, feat_df], axis=1)
+
+        elif feat == 'min':
+            feat_df = df.groupby(groupby_col_name).min().add_suffix('_'+feat)
+            result = pd.concat([result, feat_df], axis=1)
+        elif feat == 'max':
+            feat_df = df.groupby(groupby_col_name).max().add_suffix('_'+feat)
+            result = pd.concat([result, feat_df], axis=1)
+        else:
+            pass
+    return result
+
+
+start = timeit.default_timer()
+pd_result = make_basic_summ_features(data.loc[:, ['customer_ID']+cols_D], groupby_col_name)
+print('Pandas Elapse: ', timeit.default_timer() - start)
 
 
 #%% Na check

@@ -2,13 +2,10 @@
 import pandas as pd
 import numpy as np
 from datetime import datetime
-# from dataprep.eda import create_report
+from dataprep.eda import create_report
 import gc
 import os
 import pickle
-import findspark
-findspark.init()
-
 
 # import plotly
 # import plotly.graph_objs as go
@@ -16,32 +13,16 @@ findspark.init()
 # import matplotlib.pyplot as plt
 
 
-import pyspark
-import databricks.koalas as ks
-import pyspark.pandas as ps
-
 from pyarrow import feather
-
-#%% koalas test
-dates = pd.date_range('20220323', periods=6)
-pdf = pd.DataFrame(np.random.randn(6,4), index=dates)
-
-kdf = ks.from_pandas(pdf)
-
-
 
 
 #%%
 #
 # train_raw = pd.read_csv('./data/train_data.csv', nrows=10)
-train_ft = pd.read_feather('./data/train_data.ftr')
+train_ft = pd.read_feather('./SH/data/train_data.ftr')
 # test_ft = pd.read_feather('./data/test_data.ftr')
 
 # train_ft_32 = pd.read_feather('./data/train_data_f32.ftr')
-
-train_df = ps.read_csv('./data/train_data.csv')
-
-train_data = feather.read_feather('./data/train_data.ftr')
 
 
 
@@ -71,12 +52,17 @@ len(id_list)
 #%% dataprep 레포트 생성
 
 
-def make_eda_report(data:pd.DataFrame, data_cnt:int=1000, report_name:str='test'):
+def make_eda_report(data:pd.DataFrame, data_cnt:int=(13*2000), report_name:str='test'):
     report_data = data.loc[:data_cnt, :]
     report = create_report(report_data)
-    report.save(f'./middle_output/{report_name}')
+    report.save(f'./SH/middle_output/{report_name}')
     print(f'{report_name} save done.')
 
+SB_data = pd.concat([tr_S, tr_B], axis=1)
+make_eda_report(SB_data, report_name='sample_SB_report')
+
+BD_data = pd.concat([tr_B, tr_D], axis=1)
+make_eda_report(BD_data, report_name='sample_BD_report')
 
 make_eda_report(tr_S, report_name='sample_S_report')
 make_eda_report(tr_D, report_name='sample_D_report')

@@ -13,7 +13,8 @@ import dask.dataframe as dd
 
 
 
-def get_basic_summary_feats(data:pd.DataFrame, groupby_col_name:str, agg_list:list=['mean', 'std', 'min', 'max', 'last', 'first']):
+def get_basic_summary_feats(data:pd.DataFrame, groupby_col_name:str, agg_list:list=['mean', 'std', 'min', 'max', 'last', 'first'])\
+        -> pd.DataFrame:
     """
     연속형 변수에 aggregation 기본 제공 항목에 대한 groupby 진행.
     :param data: groupby 진행할 dataframe

@@ -1,13 +1,16 @@
 """
-feature 경로 : G:\공유 드라이브\BRIQUE\(B)과제\(BB)내부\기타\BI-Y20-DS-005-1 TraceDataAnalysis\03.분석\feature_store
-feature 명: numeric_basic_summary.parquet
-용량 : 1.54GB
-설명 : 연속형 변수에 대한 다음 항목의 summary 변수
+- feature 경로 : G:\공유 드라이브\BRIQUE\(B)과제\(BB)내부\기타\BI-Y20-DS-005-1 TraceDataAnalysis\03.분석\feature_store
+- feature 명: numeric_basic_summary.parquet
+- 용량 : 1.54GB
+- 설명 : 연속형 변수에 대한 다음 항목의 summary 변수
     평균, 표준편차, 최소, 최대, 처음 값, 마지막 값
+- 참고
+    - dask설치 : pip install "dask[complete]"
 """
 
 #%%
 import pandas as pd
+import dask.dataframe as dd
 
 
 
@@ -22,4 +25,21 @@ def get_basic_summary_feats(data:pd.DataFrame, groupby_col_name:str, agg_list:li
     result = data.groupby(groupby_col_name).agg(agg_list)
     result.columns = ['_'.join(x) for x in result.columns]
     result = result.reset_index()
+    return result
+
+
+
+def get_basic_summary_feats_dask(data:pd.DataFrame, groupby_col_name:str, agg_list:list=['mean', 'std', 'min', 'max', 'last', 'first']):
+    """
+    (Dask 사용) 연속형 변수에 aggregation 기본 제공 항목에 대한 groupby 진행.
+    :param data: groupby 진행할 dataframe
+    :param groupby_col_name: groupby 기준 컬럼 명
+    :param agg_list: aggregation 수행할 항목 list
+    :return:
+    """
+    dask_df = dd.from_pandas(data, chunksize=5)
+    result = dask_df.groupby(groupby_col_name).agg(agg_list)
+    result.columns = ['_'.join(x) for x in result.columns]
+    result = result.reset_index()
+
     return result

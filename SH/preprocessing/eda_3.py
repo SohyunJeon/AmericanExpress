@@ -69,13 +69,17 @@ feather.write_feather(date_data, './SH/data/train_date_data.ftr')
 
 #%% Numeric summary
 
+def range(x: np.array) -> np.array:
+    return abs(x.max() - x.min())
 
-def get_basic_summary_feats(data:pd.DataFrame, groupby_col_name:str, agg_list:list=['mean', 'std', 'min', 'max', 'last', 'first']):
+
+def get_basic_summary_feats(data:pd.DataFrame, groupby_col_name:str,
+                            agg_list: list=['mean', 'std', 'min', 'max', 'median', 'skew', 'last', 'first']) -> pd.DataFrame:
     """
     연속형 변수에 aggregation 기본 제공 항목에 대한 groupby 진행.
     :param data: groupby 진행할 dataframe
     :param groupby_col_name: groupby 기준 컬럼 명
-    :param agg_list: aggregation 수행할 항목 list
+    :param agg_list: pandas aggregation에서 기본적으로 제공하는 함수명의 list
     :return:
     """
     result = data.groupby(groupby_col_name).agg(agg_list)
@@ -100,14 +104,16 @@ def get_basic_summary_feats_dask(data:pd.DataFrame, groupby_col_name:str, agg_li
 
     return result
 
-
+num_data = feather.read_feather('./SH/data/train_numeric_data.ftr')
 
 num_basic_summ_feats = get_basic_summary_feats(num_data, 'id')
 
 num_basic_summ_feats.insert(0, 'customer_ID', num_basic_summ_feats['id'].apply(lambda x: id_dict[x]))
 num_basic_summ_feats = num_basic_summ_feats.drop(['id'], axis=1)
 
-num_basic_summ_feats.to_parquet('./SH/middle_output/numeric_basic_summary.parquet',
+
+num_basic_summ_feats.loc[:, [x for x in num_basic_summ_feats.columns if ('median' in x) or ('skew' in x)]].to_parquet(
+    './SH/middle_output/numeric_basic_summary_added.parquet',
                                 engine='fastparquet')
 
 

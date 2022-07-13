@@ -12,9 +12,11 @@
 import pandas as pd
 
 
-
-def get_basic_summary_feats(data:pd.DataFrame, groupby_col_name:str,
-                            agg_list: list=['mean', 'std', 'min', 'max', 'median', 'skew', 'last', 'first']) -> pd.DataFrame:
+def get_basic_summary_feats(
+    data: pd.DataFrame,
+    groupby_col_name: str,
+    agg_list: list = ["mean", "std", "min", "max", "median", "skew", "last", "first"],
+) -> pd.DataFrame:
     """
     연속형 변수에 aggregation 기본 제공 항목에 대한 groupby 진행.
     :param data: groupby 진행할 dataframe
@@ -23,8 +25,6 @@ def get_basic_summary_feats(data:pd.DataFrame, groupby_col_name:str,
     :return:
     """
     result = data.groupby(groupby_col_name).agg(agg_list)
-    result.columns = ['_'.join(x) for x in result.columns]
+    result.columns = ["_".join(x) for x in result.columns]
     result = result.reset_index()
     return result
-
-

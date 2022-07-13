@@ -1,0 +1,4 @@
+pandas==1.4.3
+numpy==1.23.0
+black==22.6.0
+pyarrow==8.0.0

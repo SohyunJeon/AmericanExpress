@@ -68,7 +68,7 @@ def get_payment_basic_and_gap_feats(df: pd.DataFrame, date_col_name: str, groupb
     :param df: groupby 진행할 dataframe
     :param date_col_name: datetime 컬럼 명
     :param groupby_col_name: groupby 기준 컬럼 명
-    :return: groupby 결과
+    :return: customer_ID,paymonth_gap 컬럼을 가진 dataframe
     """
     # agg dataframe 만들기
     payment_basic_df = get_payment_basic_feats(df,date_col_name,groupby_col_name)

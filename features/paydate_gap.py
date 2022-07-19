@@ -63,7 +63,7 @@ def get_payment_basic_feats(
     return result
 
 
-def get_payment_basic_and_gap_feats(df: pd.DataFrame, date_col_name: str, groupby_col_name: str) -> pd.DataFrame:
+def get_payment_gap_feats(df: pd.DataFrame, date_col_name: str, groupby_col_name: str) -> pd.DataFrame:
     """
     :param df: groupby 진행할 dataframe
     :param date_col_name: datetime 컬럼 명
@@ -91,7 +91,7 @@ def get_payment_basic_and_gap_feats(df: pd.DataFrame, date_col_name: str, groupb
 if __name__ == "__main__":
     data = pd.read_feather(r"G:\내 드라이브\code\amex_default_predict\data\train_data.ftr")
     test_data = pd.read_feather(r"G:\내 드라이브\code\amex_default_predict\data\test_data.ftr")
-    test_payment_feats = get_payment_basic_and_gap_feats(test_data, date_col_name="S_2", groupby_col_name="customer_ID")
-    train_payment_feats = get_payment_basic_and_gap_feats(data, date_col_name="S_2", groupby_col_name="customer_ID")
+    train_payment_feats = get_payment_gap_feats(data, date_col_name="S_2", groupby_col_name="customer_ID")
+    test_payment_feats = get_payment_gap_feats(test_data, date_col_name="S_2", groupby_col_name="customer_ID")
     # filepath = r'G:\내 드라이브\code\amex_default_predict\features\paydate_gap.parquet'
     # train_payment_feats.to_parquet(filepath, engine='fastparquet')
